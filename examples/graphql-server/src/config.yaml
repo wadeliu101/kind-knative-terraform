@@ -1,0 +1,6 @@
+port: 3000
+mysql:
+  host: mysql.graphql.svc.cluster.local
+  user: root
+  password: root
+  database: classicmodels

@@ -1,0 +1,15 @@
+apiVersion: skaffold/v2beta12
+kind: Config
+metadata:
+  name: graphql-server
+build:
+  artifacts:
+  - image: asia.gcr.io/pinjyun/graphql-server
+    context: src
+    kaniko: {}
+  googleCloudBuild:
+    projectId: pinjyun
+deploy:
+  kustomize:
+    paths:
+    - kustomize
