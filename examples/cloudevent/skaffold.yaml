@@ -1,0 +1,15 @@
+apiVersion: skaffold/v2beta12
+kind: Config
+metadata:
+  name: cloudevent
+build:
+  artifacts:
+  - image: asia.gcr.io/pinjyun/cloudevent
+    context: src
+    kaniko: {}
+  googleCloudBuild:
+    projectId: pinjyun
+deploy:
+  kustomize:
+    paths:
+    - kustomize
