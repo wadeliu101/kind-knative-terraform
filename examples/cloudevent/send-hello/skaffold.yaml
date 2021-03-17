@@ -1,11 +1,11 @@
 apiVersion: skaffold/v2beta12
 kind: Config
 metadata:
-  name: cloudevent
+  name: send-hello
 build:
   artifacts:
-  - image: asia.gcr.io/pinjyun/cloudevent
-    context: src
+  - image: asia.gcr.io/pinjyun/send-hello
+    context: ./
     kaniko: {}
   googleCloudBuild:
     projectId: pinjyun

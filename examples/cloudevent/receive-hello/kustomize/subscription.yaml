@@ -8,4 +8,4 @@ spec:
     kind: NatssChannel
     name: cloudevent
   subscriber:
-    uri: http://hello-display.cloudevent.svc.cluster.local
+    uri: http://receive-hello.receive-hello.svc.cluster.local

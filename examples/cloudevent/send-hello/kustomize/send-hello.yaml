@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: send-hello
+  labels:
+    app: send-hello
+spec:
+  template:
+    spec:
+      containers:
+      - name: send-hello
+        image: asia.gcr.io/pinjyun/send-hello:latest
+        env:
+        - name: CHANNEL_URL
+          value: http://cloudevent-kn-channel.receive-hello.svc.cluster.local
+      imagePullSecrets:
+      - name: gcr-json-key
+      restartPolicy: Never
+      dnsPolicy: ClusterFirst

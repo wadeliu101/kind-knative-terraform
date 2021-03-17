@@ -1,0 +1,15 @@
+apiVersion: skaffold/v2beta12
+kind: Config
+metadata:
+  name: receive-hello
+build:
+  artifacts:
+  - image: asia.gcr.io/pinjyun/receive-hello
+    context: ./
+    kaniko: {}
+  googleCloudBuild:
+    projectId: pinjyun
+deploy:
+  kustomize:
+    paths:
+    - kustomize
