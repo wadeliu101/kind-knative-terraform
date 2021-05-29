@@ -6,9 +6,21 @@ resource "kind_cluster" "knative" {
     apiVersion: kind.x-k8s.io/v1alpha4
     nodes:
     - role: control-plane
+      kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
       extraPortMappings:
-      - containerPort: 31080
+      - containerPort: 32041
         hostPort: 80
+        protocol: TCP
+      - containerPort: 31236
+        hostPort: 443
+        protocol: TCP
+    - role: worker
+    - role: worker
   KIONF
   wait_for_ready = true
 
