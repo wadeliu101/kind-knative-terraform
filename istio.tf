@@ -1,54 +1,137 @@
-resource "null_resource" "installing-istio-operator" {
-  provisioner "local-exec" {
-    command = "istioctl operator init"
+resource "null_resource" "download_istio" {
+  triggers = {
+    ISTIO_VERSION = var.ISTIO_VERSION
   }
-
-  depends_on = [ null_resource.install_knative_serving ]
+  provisioner "local-exec" {
+    command = "curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${self.triggers.ISTIO_VERSION} sh -"
+  }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm -r ${path.root}/istio-${self.triggers.ISTIO_VERSION}"
+  }
+  depends_on = [
+    helm_release.metallb
+  ]
 }
-
-resource "null_resource" "installing-istio" {
-  provisioner "local-exec" {
-    command = "kubectl apply -f ./istio-profile.yaml --wait=true"
+resource "kubernetes_namespace" "istio-operator" {
+  metadata {
+    annotations = {
+      name                             = "istio-operator"
+      "meta.helm.sh/release-name"      = "istio-operator"
+      "meta.helm.sh/release-namespace" = "istio-operator"
+    }
+    labels = {
+      "app.kubernetes.io/managed-by" = "Helm"
+    }
+    name = "istio-operator"
   }
-
-  provisioner "local-exec" {
-    command = "kubectl wait --timeout=-1s --for=condition=Established --all crd"
-  }
-
-  provisioner "local-exec" {
-    command = "sleep 10; kubectl wait --timeout=-1s --for=condition=Available --all -n istio-system deployments"
-  }
-  provisioner "local-exec" {
-    command = "kubectl apply -f ./istio-peerAuthentication.yaml --wait=true"
-  }
-
-  provisioner "local-exec" {
-    command = "kubectl label namespace knative-serving istio-injection=enabled"
-  }
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f https://github.com/knative/net-istio/releases/download/${var.KNATIVE_VERSION}/net-istio.yaml"
-  }
-
-  provisioner "local-exec" {
-    when = destroy
-    command = "kubectl delete -f ./istio-profile.yaml"
-  }
-
-  provisioner "local-exec" {
-    when = destroy
-    command = "kubectl delete namespace istio-system"
-  }
-
-  depends_on = [ null_resource.installing-istio-operator ]
+  depends_on = [null_resource.download_istio]
 }
-resource "null_resource" "configure_dns_for_knative_serving" {
-  provisioner "local-exec" {
-    command = "kubectl apply -f https://github.com/knative/serving/releases/download/${var.KNATIVE_VERSION}/serving-default-domain.yaml"
+resource "helm_release" "istio-operator" {
+  name            = "istio-operator"
+  repository      = "${path.root}/istio-${var.ISTIO_VERSION}/manifests/charts"
+  chart           = "istio-operator"
+  namespace       = kubernetes_namespace.istio-operator.metadata[0].name
+  cleanup_on_fail = true
+}
+resource "kubernetes_namespace" "istio-system" {
+  metadata {
+    annotations = {
+      name = "istio-system"
+    }
+    name = "istio-system"
   }
-
+  depends_on = [helm_release.istio-operator]
+}
+resource "local_file" "istio-profile" {
+  content  = <<-EOF
+  apiVersion: install.istio.io/v1alpha1
+  kind: IstioOperator
+  metadata:
+    name: istiocontrolplane
+  spec:
+    profile: demo
+    addonComponents:
+      pilot:
+        enabled: true
+    components:
+      ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            ports:
+            - name: status-port
+              nodePort: 31151
+              port: 15021
+              protocol: TCP
+              targetPort: 15021
+            - name: http2
+              nodePort: 32041
+              port: 80
+              protocol: TCP
+              targetPort: 8080
+            - name: https
+              nodePort: 31236
+              port: 443
+              protocol: TCP
+              targetPort: 8443
+            - name: tcp
+              nodePort: 31705
+              port: 31400
+              protocol: TCP
+              targetPort: 31400
+            - name: tls
+              nodePort: 32152
+              port: 15443
+              protocol: TCP
+              targetPort: 15443
+          nodeSelector:
+            ingress-ready: "true"
+          tolerations:
+          - key: "node-role.kubernetes.io/master"
+            operator: "Exists"
+            effect: "NoSchedule"
+      egressGateways:
+      - name: istio-egressgateway
+        enabled: true
+        k8s:
+          nodeSelector:
+            ingress-ready: "true"
+          tolerations:
+          - key: "node-role.kubernetes.io/master"
+            operator: "Exists"
+            effect: "NoSchedule"
+    values:
+      global:
+        proxy:
+          autoInject: enabled
+        useMCP: false
+        jwtPolicy: first-party-jwt
+  EOF
+  filename = "${path.root}/configs/istio-profile.yaml"
   provisioner "local-exec" {
-    command = "kubectl patch configmap -n knative-serving config-domain -p '{\"data\": {\"127.0.0.1.sslip.io\": \"\"}}'"
+    command = "kubectl apply -f ${self.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
-  depends_on = [ null_resource.installing-istio ]
+  depends_on = [
+    helm_release.istio-operator
+  ]
+}
+resource "time_sleep" "wait_istio_ready" {
+  create_duration = "30s"
+  provisioner "local-exec" {
+    command = "kubectl wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.istio-system.metadata[0].name}"
+  }
+  depends_on = [
+    local_file.istio-profile
+  ]
+}
+data "kubernetes_service" "istio-ingressgateway" {
+  metadata {
+    name = "istio-ingressgateway"
+    namespace = kubernetes_namespace.istio-system.metadata[0].name
+  }
+  depends_on = [
+    time_sleep.wait_istio_ready
+  ]
 }

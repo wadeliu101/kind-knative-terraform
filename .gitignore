@@ -2,3 +2,5 @@ terraform.tfstate*
 .terraform
 test
 knative-config
+istio-*
+configs

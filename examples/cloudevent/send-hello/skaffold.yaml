@@ -6,9 +6,9 @@ build:
   artifacts:
   - image: asia.gcr.io/pinjyun/send-hello
     context: ./
-    kaniko: {}
   googleCloudBuild:
     projectId: pinjyun
+    kanikoImage: gcr.io/kaniko-project/executor:v1.3.0
 deploy:
   kustomize:
     paths:
