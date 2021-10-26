@@ -25,6 +25,7 @@ provider "registry.terraform.io/hashicorp/helm" {
   version     = "2.3.0"
   constraints = "2.3.0"
   hashes = [
+    "h1:mLNIobQGKfv/9kCqe7+41y2K8bC/Kjet4Fzc+ImcZeM=",
     "h1:qo08yDJAnkE8H2CNuI2fVP2W+J3bOCrXWRvAerQpgc8=",
     "zh:0c63c0aa9f13ec057971c9ddd0965e062b064c0b2ce9a3d13df41239b8f5af89",
     "zh:14b4146e56b1c1e5492ce597d03fb993a71039dd701e3886667f7ad3d60afd34",
@@ -44,6 +45,7 @@ provider "registry.terraform.io/hashicorp/kubernetes" {
   version     = "2.6.1"
   constraints = "2.6.1"
   hashes = [
+    "h1:DWgawNO2C7IuXC2v9IjTSsqs1vZHSAbP4ilWQ0LdbwI=",
     "h1:xC0zk0wWTlWLwGLp9cBRJG8672Pp1PZQmHCA4FAJp4U=",
     "zh:081fbaf9441ebb278753dcf05f318fa7d445e9599a600d7c525e9a18b871d4c8",
     "zh:143bfbe871c628981d756ead47486e807fce876232d05607e0b8852ebee4eed8",
@@ -63,6 +65,7 @@ provider "registry.terraform.io/hashicorp/local" {
   version = "2.1.0"
   hashes = [
     "h1:EYZdckuGU3n6APs97nS2LxZm3dDtGqyM4qaIvsmac8o=",
+    "h1:KfieWtVyGWwplSoLIB5usKAUnrIkDQBkWaR5TI+4WYg=",
     "zh:0f1ec65101fa35050978d483d6e8916664b7556800348456ff3d09454ac1eae2",
     "zh:36e42ac19f5d68467aacf07e6adcf83c7486f2e5b5f4339e9671f68525fc87ab",
     "zh:6db9db2a1819e77b1642ec3b5e95042b202aee8151a0256d289f2e141bf3ceb3",
@@ -100,6 +103,7 @@ provider "registry.terraform.io/hashicorp/null" {
 provider "registry.terraform.io/hashicorp/time" {
   version = "0.7.2"
   hashes = [
+    "h1:NKy1QrNLlP5mKy5Tea6lQSRsVoyydJQKh6WvNTdBF4I=",
     "h1:YYLAfhMFP5nhV2iZPslqsLkZN+6sZo7gMJW7pLcLfM8=",
     "zh:0bbe0158c2a9e3f5be911b7e94477586110c51746bb13d102054f22754565bda",
     "zh:3250af7fd49b8aaf2ccc895588af05197d886e38b727e3ba33bcbb8cc96ad34d",
@@ -119,6 +123,7 @@ provider "registry.terraform.io/justenwalker/kind" {
   version     = "0.11.0-rc.1"
   constraints = "0.11.0-rc.1"
   hashes = [
+    "h1:4vV5sNAIVpBfYzz2c8qrRBmpjYwg5r6LbfnvYDqYrmQ=",
     "h1:6bUZzSUqmWiLS719fhji/9LTvsQUzTkgyr8PUpUoNgU=",
     "zh:1825cd746c740439f9210866dab0f06e7f7f6d059043f984a81beac00971a17e",
     "zh:2ecab80dfa57cbd64eddcdcf13a3fc3949be51ded83e981d371b2a4799d77e18",
