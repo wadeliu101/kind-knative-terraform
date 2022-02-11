@@ -6,25 +6,18 @@ resource "kubernetes_namespace" "knative-eventing" {
     null_resource.configure_dns_for_knative_serving
   ]
 }
-resource "local_file" "knative-eventing" {
-  content = <<-EOF
+resource "kubectl_manifest" "knative-eventing" {
+  yaml_body = <<-EOF
   apiVersion: operator.knative.dev/v1alpha1
   kind: KnativeEventing
   metadata:
     name: knative-eventing
   spec:
-    version: ${var.KNATIVE_VERSION}
-    manifests:
-    - URL: https://github.com/knative/eventing/releases/download/v$${VERSION}/eventing.yaml
-    - URL: https://github.com/knative/eventing/releases/download/v$${VERSION}/eventing-post-install-jobs.yaml
     source:
       natss:
         enabled: true
   EOF
-  filename = "${path.root}/configs/knative-eventing.yaml"
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${self.filename} -n ${kubernetes_namespace.knative-eventing.metadata[0].name}"
-  }
+  override_namespace = kubernetes_namespace.knative-eventing.metadata[0].name
 }
 resource "time_sleep" "wait_knative_eventing_ready" {
   create_duration = "30s"
@@ -32,7 +25,7 @@ resource "time_sleep" "wait_knative_eventing_ready" {
     command = "kubectl wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.knative-eventing.metadata[0].name}"
   }
   depends_on = [
-    local_file.knative-eventing
+    kubectl_manifest.knative-eventing
   ]
 }
 resource "helm_release" "nats-streaming" {
@@ -60,7 +53,7 @@ resource "helm_release" "nats-streaming" {
 }
 resource "null_resource" "install_the_nats_streaming_channel" {
   provisioner "local-exec" {
-    command = "kubectl apply --filename https://github.com/knative-sandbox/eventing-natss/releases/download/v${var.KNATIVE_VERSION}/eventing-natss.yaml"
+    command = "kubectl apply --filename https://github.com/knative-sandbox/eventing-natss/releases/download/knative-v${var.KNATIVE_VERSION}/eventing-natss.yaml"
   }
   provisioner "local-exec" {
     command = "kubectl wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.knative-eventing.metadata[0].name}"

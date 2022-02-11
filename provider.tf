@@ -1,5 +1,9 @@
 terraform {
   required_providers {
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "1.13.1"
+    }
     external = {
       source = "hashicorp/external"
       version = "2.1.0"
